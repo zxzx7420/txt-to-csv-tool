@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TXT 转 CSV 工具</title>
+</head>
+<body>
+    <h1>TXT 转 CSV 工具</h1>
+    <p>上传你的 TXT 文件，分隔符为 "="，提取 "," 前的内容作为第一列，"=" 后的内容作为第二列。</p>
+    <input type="file" id="txtFile" accept=".txt">
+    <button onclick="convertToCSV()">转换为 CSV</button>
+    <a id="downloadLink" style="display: none;">下载 CSV 文件</a>
+
+    <script>
+        function convertToCSV() {
+            const fileInput = document.getElementById('txtFile');
+
+            if (!fileInput.files.length) {
+                alert('请先选择一个 TXT 文件！');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                const lines = event.target.result.split('\n'); // 按行分割
+                const csvContent = ['输入码,替换文本']; // CSV 表头
+
+                lines.forEach(line => {
+                    line = line.trim(); // 去掉首尾空格
+                    if (!line) return; // 跳过空行
+
+                    const [left, right] = line.split('='); // 按 "=" 分割
+                    if (!left || !right) return; // 跳过格式错误的行
+
+                    const inputCode = left.split(',')[0]; // 提取 "," 前的内容
+                    const replacementText = right.trim(); // 提取 "=" 后的内容
+
+                    csvContent.push(`${inputCode},${replacementText}`); // 添加到 CSV 内容
+                });
+
+                // 创建 CSV 文件
+                const csvBlob = new Blob([csvContent.join('\n')], { type: 'text/csv' });
+                const downloadLink = document.getElementById('downloadLink');
+                downloadLink.href = URL.createObjectURL(csvBlob);
+                downloadLink.download = 'output.csv';
+                downloadLink.style.display = 'block';
+                downloadLink.textContent = '点击下载 CSV 文件';
+            };
+
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
